@@ -107,7 +107,6 @@ purple-team-lab/
 └── README.md              # Documentation
 
 
-
 👤 Author
 Abdoulaye - Cybersecurity Engineer / DevSecOps
 
