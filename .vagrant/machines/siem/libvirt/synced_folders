@@ -1,0 +1,1 @@
+{"rsync":{"/vagrant":{"disabled":false,"guestpath":"/vagrant","hostpath":"/home/abdou/purple-team-lab","type":"rsync","__vagrantfile":true,"owner":"vagrant","group":"vagrant"}}}

@@ -1,0 +1,5 @@
+---
+- hosts: phishing
+  become: true
+  roles:
+    - phishing

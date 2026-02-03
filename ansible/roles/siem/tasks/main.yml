@@ -1,0 +1,73 @@
+---
+- name: Créer le dossier de projet ELK
+  file:
+    path: /opt/elk
+    state: directory
+    mode: '0755'
+
+- name: Augmenter vm.max_map_count (Vital pour Elasticsearch)
+  sysctl:
+    name: vm.max_map_count
+    value: '262144'
+    state: present
+    reload: yes
+
+- name: Déployer le fichier docker-compose.yml
+  copy:
+    dest: /opt/elk/docker-compose.yml
+    content: |
+      version: '3'
+      services:
+        # 1. Elasticsearch : Le moteur de recherche/stockage
+        elasticsearch:
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+          container_name: elasticsearch
+          environment:
+            - node.name=elasticsearch
+            - cluster.name=es-docker-cluster
+            - discovery.type=single-node
+            - bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+          ulimits:
+            memlock:
+              soft: -1
+              hard: -1
+          ports:
+            - "9200:9200"
+          networks:
+            - elk
+
+        # 2. Kibana : L'interface visuelle (Dashboard)
+        kibana:
+          image: docker.elastic.co/kibana/kibana:7.17.9
+          container_name: kibana
+          ports:
+            - "5601:5601"
+          environment:
+            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+          networks:
+            - elk
+          depends_on:
+            - elasticsearch
+
+        # 3. Logstash : Le tuyau qui reçoit les logs
+        logstash:
+          image: docker.elastic.co/logstash/logstash:7.17.9
+          container_name: logstash
+          command: logstash -e 'input { beats { port => 5044 } } output { elasticsearch { hosts => ["elasticsearch:9200"] } }'
+          ports:
+            - "5044:5044"
+          networks:
+            - elk
+          depends_on:
+            - elasticsearch
+
+      networks:
+        elk:
+          driver: bridge
+
+- name: Lancer la Stack ELK avec Docker Compose
+  shell: docker compose up -d
+  args:
+    chdir: /opt/elk
+ 

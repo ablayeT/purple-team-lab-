@@ -1,0 +1,76 @@
+---
+# 0. PRÉ-REQUIS OBLIGATOIRE
+- name: Installer la librairie Python Docker pour Ansible
+  apt:
+    pkg:
+      - python3-docker
+      - python3-requests
+      - apt-transport-https
+      - gnupg
+    state: present
+    update_cache: yes
+
+# 1. DÉPLOIEMENT DE LA CIBLE (DVWA)
+- name: Lancer le conteneur DVWA (Site Vulnérable)
+  docker_container:
+    name: dvwa
+    image: vulnerables/web-dvwa
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+    env:
+      k8s: "false"
+
+# 2. INSTALLATION DE L'AGENT DE SURVEILLANCE (FILEBEAT)
+# --- CORRECTION DEBUT : Méthode Keyrings Moderne ---
+- name: Créer le dossier pour les clés (si absent)
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Télécharger la clé GPG Elastic
+  get_url:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dest: /etc/apt/keyrings/elastic.asc
+    mode: '0644'
+    force: yes
+
+- name: Ajouter le dépôt Elastic
+  apt_repository:
+    # pointer explicitement vers la clé .asc qui vient d'être télécharger
+    repo: "deb [signed-by=/etc/apt/keyrings/elastic.asc] https://artifacts.elastic.co/packages/7.x/apt stable main"
+    state: present
+    filename: elastic-7.x
+# --- CORRECTION FIN ---
+
+- name: Installer Filebeat
+  apt:
+    name: filebeat
+    state: present
+    update_cache: yes
+
+- name: Configurer Filebeat pour envoyer les logs au SIEM
+  copy:
+    dest: /etc/filebeat/filebeat.yml
+    content: |
+      filebeat.inputs:
+      - type: container
+        paths: 
+          - '/var/lib/docker/containers/*/*.log'
+        processors:
+        - add_docker_metadata:
+            host: "unix:///var/run/docker.sock"
+
+      output.logstash:
+        hosts: ["10.10.20.50:5044"]
+
+      setup.kibana:
+        host: "10.10.20.50:5601"
+
+- name: Activer et Démarrer Filebeat
+  service:
+    name: filebeat
+    state: started
+    enabled: yes

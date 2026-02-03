@@ -1,0 +1,5 @@
+---
+- hosts: siem
+  become: true
+  roles:
+    - siem

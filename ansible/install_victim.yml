@@ -1,0 +1,5 @@
+---
+- hosts: victim
+  become: true
+  roles:
+    - victim
