@@ -93,7 +93,8 @@ Fig 6. Kibana Discover panel receiving live telemetry from the Victim machine.
 ![HTTP request logs](/documentation/screenshots/ELK_injection_detection_attemps.png)
 Fig 7. Successful detection of the "passwd" and "cat" signatures in the HTTP request logs.
 
-📂 Project Structure
+
+ Project Structure
 Plaintext
 
 purple-team-lab/
@@ -104,6 +105,9 @@ purple-team-lab/
 │   └── Vagrantfile        # Network & VM definitions (Ruby)
 ├── documentation/         # Diagrams & Screenshots
 └── README.md              # Documentation
+
+
+
 👤 Author
 Abdoulaye - Cybersecurity Engineer / DevSecOps
 
