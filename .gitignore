@@ -1,0 +1,27 @@
+# --- Système ---
+.DS_Store
+Thumbs.db
+
+# --- Vagrant (TRES IMPORTANT) ---
+.vagrant/
+*.box
+
+# --- Ansible ---
+*.retry
+*.log
+
+# --- IDE (Visual Studio Code, IntelliJ) ---
+.vscode/
+.idea/
+
+# --- Secrets potentiels ---
+*.env
+private_key
+*.pem
+id_rsa
+id_rsa.pub
+
+# --- GoPhish & Data (Au cas où tu as téléchargé en local) ---
+gophish.db
+*.db
+*.sqlite
